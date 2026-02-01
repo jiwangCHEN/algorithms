@@ -136,7 +136,7 @@ A recurrence relation expresses a problem's cost $T(n)$ in terms of smaller subp
 Typical structure:
 
 $$
-T(n) = a , T\left(\frac{n}{b}\right) + f(n)
+T(n) = a \cdot T\left(\frac{n}{b}\right) + f(n)
 $$
 
 where:

@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLRS Knowledge Graph Cheat Sheet</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    a { color: var(--cp-link); }
+    header {
+      padding: 24px;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-bg-elevated);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--cp-text-muted);
+      max-width: 980px;
+      line-height: 1.5;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 16px;
+      padding: 16px;
+    }
+    .panel, .card, .graph-wrap {
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+    .panel { padding: 16px; }
+    .sticky { position: sticky; top: 132px; align-self: start; max-height: calc(100vh - 148px); overflow: auto; }
+    .label {
+      margin: 0 0 8px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    input, select, button {
+      font: inherit;
+      border-radius: 0.625rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      color: var(--cp-text);
+      background: var(--cp-surface-soft);
+      border: 1px solid var(--cp-border);
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--cp-accent);
+      box-shadow: 0 0 0 3px var(--cp-accent-soft);
+    }
+    .filters {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .index-list {
+      display: grid;
+      gap: 8px;
+    }
+    .index-item {
+      padding: 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      cursor: pointer;
+    }
+    .index-item:hover, .index-item.active {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent-soft);
+    }
+    .index-title { font-weight: 700; }
+    .index-meta {
+      margin-top: 4px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .main {
+      display: grid;
+      gap: 16px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      padding: 14px;
+      border-radius: 16px;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+    }
+    .stat b {
+      display: block;
+      font-size: 26px;
+      color: var(--cp-accent);
+    }
+    .stat span {
+      color: var(--cp-text-muted);
+      font-size: 13px;
+    }
+    .graph-wrap {
+      min-height: 540px;
+      overflow: hidden;
+      position: relative;
+    }
+    .graph-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-bg-elevated);
+    }
+    button {
+      padding: 8px 12px;
+      color: var(--cp-text);
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      cursor: pointer;
+    }
+    button:hover, button.active {
+      color: var(--cp-accent-fg);
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+    }
+    svg {
+      width: 100%;
+      height: 520px;
+      display: block;
+      background: var(--cp-surface);
+    }
+    .node text {
+      font-size: 12px;
+      fill: var(--cp-text);
+      pointer-events: none;
+    }
+    .node circle {
+      fill: var(--cp-surface);
+      stroke: var(--cp-accent);
+      stroke-width: 2;
+      cursor: pointer;
+    }
+    .node.core circle { fill: var(--cp-accent-soft); }
+    .node.topic circle { stroke: var(--cp-link); }
+    .node.active circle {
+      fill: var(--cp-accent);
+      stroke: var(--cp-accent-hover);
+    }
+    .node.active text { font-weight: 700; }
+    .edge {
+      stroke: var(--cp-border-strong);
+      stroke-width: 1.3;
+      opacity: 0.62;
+    }
+    .detail {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 16px;
+    }
+    .card {
+      padding: 18px;
+    }
+    .card h2, .card h3 {
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+    .muted {
+      color: var(--cp-text-muted);
+      line-height: 1.5;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chip {
+      padding: 6px 9px;
+      border-radius: 999px;
+      color: var(--cp-text);
+      background: var(--cp-accent-soft);
+      border: 1px solid var(--cp-border);
+      font-size: 12px;
+    }
+    .cheats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .cheat {
+      padding: 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .cheat h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .cheat p {
+      margin: 0;
+      color: var(--cp-text-muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .mini-table th, .mini-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .mini-table th {
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    code {
+      font-family: Consolas, "Courier New", Courier, monospace;
+      color: var(--cp-accent);
+    }
+    @media (max-width: 980px) {
+      .shell, .detail { grid-template-columns: 1fr; }
+      .sticky { position: static; max-height: none; }
+      .stats, .cheats { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      header { position: static; }
+      .stats, .cheats { grid-template-columns: 1fr; }
+      .shell { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CLRS Knowledge Graph Cheat Sheet</h1>
+    <p class="subtitle">Index-first map of <em>Introduction to Algorithms</em> topics, organized from the walkccc/CLRS repository navigation. Use search to jump from a concept to its chapter, then inspect relationships in the graph.</p>
+  </header>
+
+  <div class="shell">
+    <aside class="panel sticky">
+      <p class="label">Cheat-sheet index</p>
+      <div class="filters">
+        <input id="search" type="search" placeholder="Search algorithms, data structures, proofs...">
+        <select id="partFilter" aria-label="Filter by part"></select>
+      </div>
+      <div id="indexList" class="index-list"></div>
+    </aside>
+
+    <main class="main">
+      <section class="stats" aria-label="CLRS map stats">
+        <div class="stat"><b id="chapterCount">35</b><span>CLRS chapters indexed</span></div>
+        <div class="stat"><b>7</b><span>major textbook parts</span></div>
+        <div class="stat"><b id="topicCount">0</b><span>cheat-sheet concepts</span></div>
+        <div class="stat"><b id="edgeCount">0</b><span>knowledge links</span></div>
+      </section>
+
+      <section class="graph-wrap">
+        <div class="graph-toolbar" id="toolbar"></div>
+        <svg id="graph" role="img" aria-label="CLRS knowledge graph"></svg>
+      </section>
+
+      <section class="detail">
+        <article class="card" id="detailCard"></article>
+        <article class="card">
+          <h2>Fast retrieval rules</h2>
+          <table class="mini-table">
+            <thead><tr><th>Need</th><th>Go to</th></tr></thead>
+            <tbody>
+              <tr><td>Prove runtime</td><td>Growth, recurrences, amortized analysis</td></tr>
+              <tr><td>Choose a sorter</td><td>Comparison sorting, linear-time sorting, order statistics</td></tr>
+              <tr><td>Model state</td><td>Elementary structures, hashing, trees, augmentation</td></tr>
+              <tr><td>Optimize paths/networks</td><td>BFS/DFS, MST, shortest paths, max flow</td></tr>
+              <tr><td>Design with choices</td><td>Dynamic programming, greedy algorithms, matroids</td></tr>
+              <tr><td>Hardness or near-optimality</td><td>NP-completeness, approximation algorithms</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Cheat-sheet clusters</h2>
+        <div class="cheats" id="cheatCards"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const PARTS = [
+      { id: "foundations", name: "I Foundations", chapters: [1,2,3,4,5] },
+      { id: "sorting", name: "II Sorting and Order Statistics", chapters: [6,7,8,9] },
+      { id: "structures", name: "III Data Structures", chapters: [10,11,12,13,14] },
+      { id: "techniques", name: "IV Advanced Design and Analysis", chapters: [15,16,17] },
+      { id: "advanced-structures", name: "V Advanced Data Structures", chapters: [18,19,20,21] },
+      { id: "graphs", name: "VI Graph Algorithms", chapters: [22,23,24,25,26] },
+      { id: "topics", name: "VII Selected Topics", chapters: [27,28,29,30,31,32,33,34,35] }
+    ];
+
+    const CHAPTERS = [
+      [1,"The Role of Algorithms in Computing","foundations","what algorithms are; algorithms as technology"],
+      [2,"Getting Started","foundations","insertion sort; algorithm analysis; design"],
+      [3,"Growth of Functions","foundations","asymptotic notation; common functions"],
+      [4,"Divide-and-Conquer","foundations","maximum subarray; Strassen; recurrences; master theorem"],
+      [5,"Probabilistic Analysis and Randomized Algorithms","foundations","hiring problem; indicators; randomized algorithms"],
+      [6,"Heapsort","sorting","heaps; heapify; build heap; priority queues"],
+      [7,"Quicksort","sorting","partitioning; randomized quicksort; expected analysis"],
+      [8,"Sorting in Linear Time","sorting","lower bounds; counting sort; radix sort; bucket sort"],
+      [9,"Medians and Order Statistics","sorting","min/max; randomized select; worst-case linear select"],
+      [10,"Elementary Data Structures","structures","stacks; queues; linked lists; rooted trees"],
+      [11,"Hash Tables","structures","direct addressing; chaining; hash functions; open addressing; perfect hashing"],
+      [12,"Binary Search Trees","structures","BST property; query; insert; delete; random BSTs"],
+      [13,"Red-Black Trees","structures","balanced trees; rotations; insertion; deletion"],
+      [14,"Augmenting Data Structures","structures","order-statistic trees; augmentation method; interval trees"],
+      [15,"Dynamic Programming","techniques","rod cutting; matrix chain; LCS; optimal BST"],
+      [16,"Greedy Algorithms","techniques","activity selection; Huffman coding; matroids; scheduling"],
+      [17,"Amortized Analysis","techniques","aggregate; accounting; potential; dynamic tables"],
+      [18,"B-Trees","advanced-structures","disk-aware search trees; split; delete"],
+      [19,"Fibonacci Heaps","advanced-structures","mergeable heaps; decrease-key; degree bounds"],
+      [20,"van Emde Boas Trees","advanced-structures","integer universe priority operations"],
+      [21,"Data Structures for Disjoint Sets","advanced-structures","union-find; rank; path compression"],
+      [22,"Elementary Graph Algorithms","graphs","representations; BFS; DFS; topological sort; SCC"],
+      [23,"Minimum Spanning Trees","graphs","cut property; Kruskal; Prim"],
+      [24,"Single-Source Shortest Paths","graphs","Bellman-Ford; DAG shortest paths; Dijkstra; difference constraints"],
+      [25,"All-Pairs Shortest Paths","graphs","matrix methods; Floyd-Warshall; Johnson"],
+      [26,"Maximum Flow","graphs","flow networks; Ford-Fulkerson; bipartite matching; push-relabel"],
+      [27,"Multithreaded Algorithms","topics","parallelism; span; parallel matrix multiply; merge sort"],
+      [28,"Matrix Operations","topics","linear systems; inverse; positive-definite matrices; least squares"],
+      [29,"Linear Programming","topics","standard form; simplex; duality; feasibility"],
+      [30,"Polynomials and the FFT","topics","polynomial representation; DFT; FFT"],
+      [31,"Number-Theoretic Algorithms","topics","gcd; modular arithmetic; CRT; RSA; primality; factoring"],
+      [32,"String Matching","topics","naive matching; Rabin-Karp; finite automata; KMP"],
+      [33,"Computational Geometry","topics","segments; intersection; convex hull; closest pair"],
+      [34,"NP-Completeness","topics","P; NP; reductions; proof patterns; NP-complete problems"],
+      [35,"Approximation Algorithms","topics","vertex cover; TSP; set cover; randomized and LP methods; subset sum"]
+    ].map(([chapter,title,part,summary]) => ({ id: "ch" + chapter, chapter, title, part, summary }));
+
+    const TOPICS = [
+      ["asymptotics","Asymptotic analysis","Proof/runtimes","Use O, Omega, Theta, logs, and common growth classes to compare algorithms.",[2,3,4,7,8,17]],
+      ["recurrences","Recurrences","Proof/runtimes","Substitution, recursion trees, and the master method are the divide-and-conquer toolkit.",[4]],
+      ["randomization","Randomization","Analysis pattern","Expected behavior via indicator variables, randomized partitioning, and probabilistic bounds.",[5,7,9,27]],
+      ["comparison-sorting","Comparison sorting","Sorting","Heapsort and quicksort live behind the Omega(n lg n) comparison lower bound.",[6,7,8]],
+      ["linear-sorting","Linear-time sorting","Sorting","Counting, radix, and bucket sort beat comparison bounds by assuming structure in keys.",[8]],
+      ["selection","Selection","Order statistics","Find rank statistics without fully sorting: randomized expected linear or deterministic worst-case linear.",[9]],
+      ["hashing","Hashing","Data structures","Trade array indexing for expected O(1) dictionary operations via hash functions and collision handling.",[11]],
+      ["balanced-trees","Balanced trees","Data structures","BST operations become reliable through rotations and invariants, then extend through augmentation.",[12,13,14,18]],
+      ["amortization","Amortization","Analysis pattern","Bound a sequence of operations with aggregate, accounting, or potential arguments.",[17,19,21]],
+      ["dynamic-programming","Dynamic programming","Design technique","Exploit optimal substructure and overlapping subproblems; define states before transitions.",[15,24,25,30]],
+      ["greedy","Greedy choice","Design technique","Prove local choices are globally safe, often using exchange arguments or matroids.",[16,23,35]],
+      ["union-find","Union-find","Data structures","Maintain components with union by rank and path compression; central to Kruskal and connectivity.",[21,23]],
+      ["graph-traversal","Graph traversal","Graph algorithms","BFS gives levels and unweighted paths; DFS gives times, topology, and component structure.",[22]],
+      ["mst","Minimum spanning tree","Graph algorithms","Cut and cycle properties justify Kruskal and Prim.",[21,23]],
+      ["shortest-paths","Shortest paths","Graph algorithms","Pick Bellman-Ford, DAG relaxation, Dijkstra, Floyd-Warshall, or Johnson by graph constraints.",[24,25]],
+      ["flow","Network flow","Graph algorithms","Residual networks and augmenting paths model matching, cuts, and circulation-like constraints.",[26]],
+      ["parallelism","Parallelism","Selected topics","Analyze work and span; expose independent subproblems without losing asymptotic discipline.",[27]],
+      ["linear-programming","Linear programming","Optimization","Convert constraints to standard/slack forms; use duality and simplex reasoning.",[29,35]],
+      ["fft","FFT","Numeric algorithms","Evaluate/interpolate polynomials quickly with divide-and-conquer structure over roots of unity.",[30]],
+      ["number-theory","Number theory","Numeric algorithms","GCD, modular equations, CRT, RSA, primality, and factoring support cryptographic algorithms.",[31]],
+      ["string-matching","String matching","Text algorithms","Use hashing, automata, or prefix functions to avoid naive rescanning.",[32]],
+      ["geometry","Computational geometry","Geometry","Orientation tests, sweeps, divide-and-conquer, and hull structure solve spatial problems.",[33]],
+      ["np-completeness","NP-completeness","Complexity","Show hardness by polynomial reductions from known NP-complete problems.",[34]],
+      ["approximation","Approximation","Complexity","When exact optimization is hard, prove ratio guarantees or pseudo-polynomial/FPTAS behavior.",[35]]
+    ].map(([id,title,kind,summary,chapters]) => ({ id, title, kind, summary, chapters }));
+
+    const RELATIONS = [
+      ["asymptotics","recurrences"],["asymptotics","comparison-sorting"],["asymptotics","amortization"],
+      ["recurrences","dynamic-programming"],["randomization","selection"],["randomization","comparison-sorting"],
+      ["comparison-sorting","selection"],["linear-sorting","selection"],["hashing","string-matching"],
+      ["balanced-trees","amortization"],["balanced-trees","selection"],["amortization","union-find"],
+      ["dynamic-programming","shortest-paths"],["dynamic-programming","fft"],["greedy","mst"],
+      ["greedy","approximation"],["union-find","mst"],["graph-traversal","mst"],["graph-traversal","shortest-paths"],
+      ["shortest-paths","flow"],["flow","linear-programming"],["linear-programming","approximation"],
+      ["number-theory","fft"],["number-theory","np-completeness"],["np-completeness","approximation"],
+      ["geometry","graph-traversal"],["parallelism","recurrences"]
+    ];
+
+    const CHEATS = [
+      ["Runtime proof ladder","Start with input model -> count primitive operation -> express recurrence/sum -> solve -> verify tightness/lower bound."],
+      ["Divide-and-conquer smell","Independent subproblems plus cheap combine: binary search, merge sort, Strassen, FFT, closest pair."],
+      ["DP smell","Choices repeat and subproblem answers are reused. Name the state; recurrence and table order follow."],
+      ["Greedy proof smell","If you can exchange the first choice of an optimal solution with your local choice, greedy may fit."],
+      ["Graph algorithm dispatch","Unweighted paths: BFS. DAG: topological relaxation. Nonnegative weights: Dijkstra. Negative edges: Bellman-Ford. Dense all-pairs: Floyd-Warshall."],
+      ["Data structure dispatch","Need dictionary: hash. Ordered predecessor/successor: balanced tree. Meld/decrease-key heavy priority queue: Fibonacci heap. Components: union-find."],
+      ["Hardness workflow","Define decision version -> prove in NP -> choose known hard problem -> polynomial transform -> iff proof."],
+      ["Approximation workflow","Give algorithm -> lower-bound OPT -> compare solution cost/value -> state ratio and assumptions."]
+    ];
+
+    const sourceBase = "https://walkccc.me/CLRS/";
+    const repoBase = "https://github.com/walkccc/CLRS";
+    let selected = TOPICS[0].id;
+    let activePart = "all";
+    let activeGraph = "all";
+
+    const partById = Object.fromEntries(PARTS.map(p => [p.id, p]));
+    const chapterByNumber = Object.fromEntries(CHAPTERS.map(c => [c.chapter, c]));
+    const topicById = Object.fromEntries(TOPICS.map(t => [t.id, t]));
+
+    function chapterUrl(n) {
+      return sourceBase + "Chap" + String(n).padStart(2, "0") + "/";
+    }
+
+    function renderFilters() {
+      const select = document.getElementById("partFilter");
+      select.innerHTML = `<option value="all">All parts</option>` + PARTS.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+      select.addEventListener("change", () => {
+        activePart = select.value;
+        renderIndex();
+        renderGraph();
+      });
+      document.getElementById("search").addEventListener("input", renderIndex);
+    }
+
+    function matches(topic, query) {
+      const haystack = [
+        topic.title, topic.kind, topic.summary,
+        ...topic.chapters.map(n => chapterByNumber[n].title + " " + chapterByNumber[n].summary)
+      ].join(" ").toLowerCase();
+      return haystack.includes(query.toLowerCase());
+    }
+
+    function visibleTopics() {
+      const query = document.getElementById("search").value.trim();
+      return TOPICS.filter(t => {
+        const partOk = activePart === "all" || t.chapters.some(n => chapterByNumber[n].part === activePart);
+        return partOk && (!query || matches(t, query));
+      });
+    }
+
+    function renderIndex() {
+      const items = visibleTopics();
+      const list = document.getElementById("indexList");
+      list.innerHTML = items.map(t => {
+        const chapters = t.chapters.map(n => "Ch " + n).join(", ");
+        return `<div class="index-item ${t.id === selected ? "active" : ""}" data-id="${t.id}">
+          <div class="index-title">${t.title}</div>
+          <div class="index-meta">${t.kind} | ${chapters}</div>
+        </div>`;
+      }).join("") || `<div class="muted">No matching concepts.</div>`;
+      list.querySelectorAll(".index-item").forEach(el => {
+        el.addEventListener("click", () => selectTopic(el.dataset.id));
+      });
+      document.getElementById("topicCount").textContent = TOPICS.length;
+      document.getElementById("edgeCount").textContent = RELATIONS.length;
+    }
+
+    function renderToolbar() {
+      const toolbar = document.getElementById("toolbar");
+      toolbar.innerHTML = [`<button data-view="all">All clusters</button>`]
+        .concat(PARTS.map(p => `<button data-view="${p.id}">${p.name.replace(/^[IVX]+ /, "")}</button>`))
+        .join("");
+      toolbar.querySelectorAll("button").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === activeGraph);
+        btn.addEventListener("click", () => {
+          activeGraph = btn.dataset.view;
+          renderToolbar();
+          renderGraph();
+        });
+      });
+    }
+
+    function graphData() {
+      const allowedTopics = TOPICS.filter(t => activeGraph === "all" || t.chapters.some(n => chapterByNumber[n].part === activeGraph));
+      const allowedIds = new Set(allowedTopics.map(t => t.id));
+      const nodes = [];
+      const edges = [];
+      const partIds = new Set();
+      allowedTopics.forEach(t => {
+        t.chapters.forEach(n => partIds.add(chapterByNumber[n].part));
+      });
+      partIds.forEach(id => nodes.push({ id, title: partById[id].name, type: "core" }));
+      allowedTopics.forEach(t => nodes.push({ ...t, type: "topic" }));
+      allowedTopics.forEach(t => {
+        const parts = new Set(t.chapters.map(n => chapterByNumber[n].part));
+        parts.forEach(part => edges.push({ source: part, target: t.id }));
+      });
+      RELATIONS.forEach(([a,b]) => {
+        if (allowedIds.has(a) && allowedIds.has(b)) edges.push({ source: a, target: b });
+      });
+      return { nodes, edges };
+    }
+
+    function renderGraph() {
+      const svg = document.getElementById("graph");
+      const { nodes, edges } = graphData();
+      const width = svg.clientWidth || 900;
+      const height = 520;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(width, height) * 0.38;
+      const core = nodes.filter(n => n.type === "core");
+      const topics = nodes.filter(n => n.type === "topic");
+
+      core.forEach((n, i) => {
+        const angle = (Math.PI * 2 * i / Math.max(core.length, 1)) - Math.PI / 2;
+        n.x = centerX + Math.cos(angle) * radius * 0.42;
+        n.y = centerY + Math.sin(angle) * radius * 0.42;
+      });
+      topics.forEach((n, i) => {
+        const angle = (Math.PI * 2 * i / Math.max(topics.length, 1)) - Math.PI / 2;
+        const wobble = (i % 4) * 18;
+        n.x = centerX + Math.cos(angle) * (radius + wobble);
+        n.y = centerY + Math.sin(angle) * (radius + wobble);
+      });
+      const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+      svg.innerHTML = "";
+      const edgeLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const nodeLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      svg.append(edgeLayer, nodeLayer);
+      edges.forEach(e => {
+        const s = byId[e.source], t = byId[e.target];
+        if (!s || !t) return;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", s.x);
+        line.setAttribute("y1", s.y);
+        line.setAttribute("x2", t.x);
+        line.setAttribute("y2", t.y);
+        line.setAttribute("class", "edge");
+        edgeLayer.appendChild(line);
+      });
+      nodes.forEach(n => {
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute("class", "node " + n.type + (n.id === selected ? " active" : ""));
+        group.setAttribute("transform", `translate(${n.x}, ${n.y})`);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("r", n.type === "core" ? 22 : 15);
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", n.type === "core" ? 28 : 20);
+        text.setAttribute("y", 4);
+        text.textContent = n.type === "core" ? n.title.replace(/^[IVX]+ /, "") : n.title;
+        group.append(circle, text);
+        if (n.type === "topic") group.addEventListener("click", () => selectTopic(n.id));
+        nodeLayer.appendChild(group);
+      });
+    }
+
+    function selectTopic(id) {
+      selected = id;
+      renderIndex();
+      renderDetail();
+      renderGraph();
+    }
+
+    function renderDetail() {
+      const t = topicById[selected] || TOPICS[0];
+      const related = RELATIONS
+        .filter(([a,b]) => a === t.id || b === t.id)
+        .map(([a,b]) => topicById[a === t.id ? b : a].title);
+      document.getElementById("detailCard").innerHTML = `
+        <p class="label">Selected concept</p>
+        <h2>${t.title}</h2>
+        <p class="muted">${t.summary}</p>
+        <div class="chips">
+          <span class="chip">${t.kind}</span>
+          ${t.chapters.map(n => `<a class="chip" href="${chapterUrl(n)}" target="_blank" rel="noreferrer">Ch ${n}: ${chapterByNumber[n].title}</a>`).join("")}
+        </div>
+        <h3 style="margin-top:18px">Indexed chapters</h3>
+        <table class="mini-table">
+          <thead><tr><th>Chapter</th><th>Cheat-sheet cues</th></tr></thead>
+          <tbody>
+            ${t.chapters.map(n => `<tr><td><a href="${chapterUrl(n)}" target="_blank" rel="noreferrer">Chapter ${n}</a></td><td>${chapterByNumber[n].summary}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <h3 style="margin-top:18px">Graph neighbors</h3>
+        <p class="muted">${related.length ? related.join(" -> ") : "This is a terminal index node in the current graph."}</p>
+        <p class="muted">Source: <a href="${repoBase}" target="_blank" rel="noreferrer">walkccc/CLRS</a></p>
+      `;
+    }
+
+    function renderCheats() {
+      document.getElementById("cheatCards").innerHTML = CHEATS.map(([title, body]) => `
+        <div class="cheat"><h3>${title}</h3><p>${body}</p></div>
+      `).join("");
+    }
+
+    renderFilters();
+    renderToolbar();
+    renderIndex();
+    renderDetail();
+    renderCheats();
+    renderGraph();
+    window.addEventListener("resize", renderGraph);
+  </script>
+</body>
+</html>
